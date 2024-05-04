@@ -112,6 +112,12 @@ function tabu_search(neighborhood, tabu_tenure)
     return best_solution, best_solution_obj_value
 end
 
+# Acceptance decision
+function acceptance_decision(initial_value, updated_value)
+    return (objective(updated_value) > objective(initial_value))
+end
+
+
 function variable_neighborhood_search(build_solution, neighborhood_function, local_search, acceptance_decision, stopping_criterion, z)
     x = build_solution()
     x_star = copy(x)  # Julia's `copy` function is used to create a deep copy of the array
