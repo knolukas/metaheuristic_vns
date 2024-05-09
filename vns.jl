@@ -65,6 +65,46 @@ end
 x2, y2 = build_solution2(n, m, c, max_fac)
 x2
 
+
+# Neighbourhood search
+
+# Kostenfunktion für das Routing-Problem (hier als Beispiel die Summe der Distanzen zwischen den Orten)
+function cost(solution, distance_matrix)
+    total_distance = 0
+    for i in 1:length(solution)-1
+        total_distance += distance_matrix[solution[i], solution[i+1]]
+    end
+    total_distance += distance_matrix[solution[end], solution[1]]  # Zurück zum Startpunkt
+    return total_distance
+end
+
+# Funktion zur Generierung einer Nachbarlösung durch Verschieben eines Ortes in der Tour
+function generate_neighbor(solution)
+    neighbor = copy(solution)
+    idx1, idx2 = rand(1:length(solution), 2)
+    neighbor[idx1], neighbor[idx2] = neighbor[idx2], neighbor[idx1]
+    return neighbor
+end
+
+# Einfache Nachbarschaftssuche mit gegebener Initiallösung
+function neighborhood_search(initial_solution, distance_matrix, max_iterations)
+    current_solution = initial_solution
+    current_cost = cost(current_solution, distance_matrix)
+    
+    for i in 1:max_iterations
+        neighbor_solution = generate_neighbor(current_solution)
+        neighbor_cost = cost(neighbor_solution, distance_matrix)
+        
+        if neighbor_cost < current_cost
+            current_solution = neighbor_solution
+            current_cost = neighbor_cost
+        end
+    end
+    
+    return current_solution, current_cost
+end
+
+
 # Local Seach 1
 function steepest_descent(neighborhood)
     best_neighbor = neighborhood[1]
