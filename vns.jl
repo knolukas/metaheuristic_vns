@@ -164,7 +164,7 @@ function variable_neighborhood_search(z)
             x = copy(x_double_prime)  # Ensure a deep copy
             k = 1
 
-            if z(x) < z(x_star)
+            if generate_objective_value(x) < generate_objective_value(x_star)
                 x_star = copy(x)  # Ensure a deep copy
             end
         else
