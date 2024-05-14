@@ -22,7 +22,6 @@ end
 #maximale Anzahl geöffneter Factories
 max_fac = 4
 
-
 # Build Solution 1
 function build_solution1(n::Int64, m::Int64, c::Matrix{Int64}, o::Vector{Int64}, max_fac::Int64)
     
@@ -62,19 +61,19 @@ function build_solution2(n::Int64, m::Int64, c::Matrix{Int64}, max_fac::Int64)
     end
     return x, y
 end
+
 x2, y2 = build_solution2(n, m, c, max_fac)
 x2
-
 
 # Neighbourhood search
 
 # Kostenfunktion für das Routing-Problem (hier als Beispiel die Summe der Distanzen zwischen den Orten)
-function cost(solution, distance_matrix)
+function cost(solution)
     total_distance = 0
     for i in 1:length(solution)-1
-        total_distance += distance_matrix[solution[i], solution[i+1]]
+        total_distance += c[solution[i], solution[i+1]]
     end
-    total_distance += distance_matrix[solution[end], solution[1]]  # Zurück zum Startpunkt
+    total_distance += c[solution[end], solution[1]]  # Zurück zum Startpunkt
     return total_distance
 end
 
@@ -87,13 +86,13 @@ function generate_neighbor(solution)
 end
 
 # Einfache Nachbarschaftssuche mit gegebener Initiallösung
-function neighborhood_search(initial_solution, distance_matrix, max_iterations)
+function neighborhood_search(initial_solution, max_iterations)
     current_solution = initial_solution
-    current_cost = cost(current_solution, distance_matrix)
+    current_cost = cost(current_solution)
     
     for i in 1:max_iterations
         neighbor_solution = generate_neighbor(current_solution)
-        neighbor_cost = cost(neighbor_solution, distance_matrix)
+        neighbor_cost = cost(neighbor_solution)
         
         if neighbor_cost < current_cost
             current_solution = neighbor_solution
@@ -106,38 +105,38 @@ end
 
 
 # Local Seach 1
-function steepest_descent(neighborhood)
-    best_neighbor = neighborhood[1]
-    best_neighbor_obj_value = objective(best_neighbor)
-    
-    for neighbor in neighborhood[2:end]
-        neighbor_obj_value = objective(neighbor)
-        if neighbor_obj_value < best_neighbor_obj_value
-            best_neighbor = neighbor
-            best_neighbor_obj_value = neighbor_obj_value
+function steepest_descent(solution, inital_objective_value)
+    best_solution = solution[1]
+    best_solution_obj_value = inital_objective_value
+
+    for solution in solution[2:end]
+        solution_obj_value = cost(solution)
+        if solution_obj_value < best_solution_obj_value
+            best_solution = solution
+            best_solution_obj_value = solution_obj_value
         end
     end
     
-    return best_neighbor, best_neighbor_obj_value
+    return best_solution, best_solution_obj_value
 end
 
 # Local Search 2
-function tabu_search(neighborhood, tabu_tenure)
-    best_solution = neighborhood[1]
-    best_solution_obj_value = objective(best_solution)
+function tabu_search(solution, tabu_tenure, inital_objective_value)
+    best_solution = solution[1]
+    best_solution_obj_value = inital_objective_value
     
     tabu_list = Set{Any}()
     
-    for neighbor in neighborhood
-        if neighbor in tabu_list
+    for value in solution
+        if value in tabu_list
             continue
         end
         
-        neighbor_obj_value = objective(neighbor)
+        solution_obj_value = cost(neighbor)
         
-        if neighbor_obj_value < best_solution_obj_value
+        if solution_obj_value < best_solution_obj_value
             best_solution = neighbor
-            best_solution_obj_value = neighbor_obj_value
+            best_solution_obj_value = solution_obj_value
         end
         
         # Add the current neighbor to the tabu list
@@ -148,13 +147,13 @@ function tabu_search(neighborhood, tabu_tenure)
             popfirst!(tabu_list)
         end
     end
-    
+
     return best_solution, best_solution_obj_value
 end
 
 # Acceptance decision
 function acceptance_decision(initial_value, updated_value)
-    return (objective(updated_value) > objective(initial_value))
+    return (cost(updated_value) > cost(initial_value))
 end
 
 
@@ -178,6 +177,5 @@ function variable_neighborhood_search(build_solution, neighborhood_function, loc
             k = 1 + (k % κ)
         end
     end
-
     return x_star
 end
