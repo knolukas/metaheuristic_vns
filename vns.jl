@@ -1,72 +1,27 @@
 # Hardcode für die gegebenen Daten
 using Random
-using JuMP
-using CPLEX
 
-# Initialisieren der Parameter
-n = 100  # Anzahl der Kunden
-m = 10   # Anzahl der Einrichtungen
+##################### start with functions ################################################
 
-# Generieren der Kostenmatrix c
-c = rand(1:100, n, m)  # Transportkosten, zufällige positive Integer zwischen 1 und 100
 
-# Generieren des Vektors für die Öffnungskosten der Einrichtungen
-opening_costs = rand(100:500, m)  # Öffnungskosten, zufällige positive Integer zwischen 100 und 500
-
-# Generieren der Präferenzmatrix w
-w = zeros(Int, n, m)
-for i in 1:n
-    w[i, :] = shuffle(1:m)  # Zufällige Anordnung der Präferenzen 1 bis 10 für jeden Kunden
-end
-
-#maximale Anzahl geöffneter Factories
-max_fac = 4
-
-# # Build Solution 1
-# function build_solution1(n::Int64, m::Int64, c::Matrix{Int64}, o::Vector{Int64}, max_fac::Int64)
-    
-#     #Initialize decision variable with zeros
-#     #create model
-#     model = Model(CPLEX.Optimizer)
-#     set_silent(model)
-#     #make the variables
-#     @variable(model, x[1:n, 1:m], Bin)
-#     @variable(model, y[1:m], Bin)
-
-#     #create objective function
-#     @objective(model, Min, sum(c[i,j]*x[i,j] for i in 1:n for j in 1:m) + sum(o[j] * y[j] for j in 1:m))
-
-#     #create constraints
-#     @constraint(model, open_facilities[j = 1:m], sum(x[i,j] for i in 1:n) <= y[j]*n)
-#     @constraint(model, max_facilities, sum(y[j] for j in 1:m) <= max_fac)
-#     # every customer gets served by one factory
-#     @constraint(model, cust_serv[i = 1:n], sum(x[i,j] for j in 1:m) == 1)
-#     optimize!(model)
-#     return model, x , y
-# end
-# model, x, y  = build_solution1(n, m, c, opening_costs, max_fac)
-# value.(x)
-# value.(y)
-
-# Build Solution 2
-function build_solution2(n::Int64, m::Int64, c::Matrix{Int64}, max_fac::Int64)
+# Build Solution
+function build_solution(n::Int64, m::Int64, c::Matrix{Int64}, max_fac::Int64)
     #choose randomly which factories are opened
     objective_value = randperm(10)[1:max_fac]
     solution = zeros(Int,n,m)
+    
     #always assign customer to cheapest opened facility
     for i in 1:n
-        index = argmin(c[i, y])
-        index = y[index]
-        x[i,index] =1
+        index = argmin(c[i, objective_value])
+        index = objective_value[index]
+        solution[i,index] =1
     end
     return solution, objective_value
 end
 
-x2, y2 = build_solution2(n, m, c, max_fac)
+x2, y2 = build_solution(n, m, c, max_fac)
 x2
 y2
-
-# Neighbourhood search
 
 # Kostenfunktion (Mulitplikation von Opening Matrix and Cost Matrix)
 function generate_objective_value(solution::Matrix{Int64})
@@ -82,14 +37,22 @@ end
 generate_objective_value(x2)
 
 # Funktion zur Generierung einer Nachbarlösung durch Verschieben eines Ortes in der Tour
-function generate_neighbor(solution) #k als parameter einbauen (Anzahl der Moves)
+function generate_neighbor(solution, k)
     neighbor = copy(solution)
-    idx1, idx2 = rand(1:length(solution), 2)
-    neighbor[idx1], neighbor[idx2] = neighbor[idx2], neighbor[idx1]
-    return neighbor, k #k als return value
+    n = length(solution)
+    
+    # Sicherstellen, dass k nicht größer als die Anzahl der Elemente ist
+    k = min(k, div(n, 2))
+
+    for _ in 1:k
+        idx1, idx2 = rand(1:n, 2)
+        neighbor[idx1], neighbor[idx2] = neighbor[idx2], neighbor[idx1]
+    end
+    
+    return neighbor
 end
 
-generate_neighbor(x2)
+generate_neighbor(x2, 2)
 
 # Einfache Nachbarschaftssuche mit gegebener Initiallösung
 function local_search(neighbor, max_iterations) # k aus neighborhood einfügen
@@ -97,7 +60,7 @@ function local_search(neighbor, max_iterations) # k aus neighborhood einfügen
     current_cost = generate_objective_value(current_solution)
     
     for i in 1:max_iterations
-        neighbor_solution, k = generate_neighbor(current_solution) #k einfügen
+        neighbor_solution = generate_neighbor(current_solution, 1) #k einfügen
         neighbor_cost = generate_objective_value(neighbor_solution)
         
         if neighbor_cost < current_cost
@@ -149,7 +112,12 @@ function acceptance_decision(initial_value, updated_value)
     return (generate_objective_value(updated_value) > generate_objective_value(initial_value))
 end
 
-max_iterations = 10
+#################################################################################################
+#################################################################################################
+# main Function
+#################################################################################################
+#################################################################################################
+
 
 function variable_neighborhood_search(z)
     x, y = build_solution2(n, m, c, max_fac)
@@ -175,5 +143,26 @@ function variable_neighborhood_search(z)
     return x_star
 end
 
+######################## Main Script #####################################################
+
+# Initialisieren der Parameter
+n = 100  # Anzahl der Kunden
+m = 10   # Anzahl der Einrichtungen
+
+# Generieren der Kostenmatrix c
+c = rand(1:100, n, m)  # Transportkosten, zufällige positive Integer zwischen 1 und 100
+
+# Generieren des Vektors für die Öffnungskosten der Einrichtungen
+opening_costs = rand(100:500, m)  # Öffnungskosten, zufällige positive Integer zwischen 100 und 500
+
+# Generieren der Präferenzmatrix w
+w = zeros(Int, n, m)
+for i in 1:n
+    w[i, :] = shuffle(1:m)  # Zufällige Anordnung der Präferenzen 1 bis 10 für jeden Kunden
+end
+
+#maximale Anzahl geöffneter Factories und Iterations
+max_fac = 4
+max_iterations = 10
 
 print(variable_neighborhood_search())
