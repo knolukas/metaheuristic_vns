@@ -16,20 +16,20 @@ function build_solution()
     return assignment, plants
 end
 
-x2, y2 = build_solution()
-x2
-y2
 
 # Funktion zur Generierung einer Nachbarlösung durch Verschieben eines Ortes in der Tour
 function generate_neighbor(plants, k)
-    neighbor = copy(plants)
+    neighbor = copy(plants) 
     n = length(plants)
     
     # Sicherstellen, dass k nicht größer als die Anzahl der Elemente ist
     k = min(k, div(n, 2))
 
     for _ in 1:k
-        idx1, idx2 = rand(1:n, 2)
+        opened = findall(x -> x == 1, neighbor)
+        closed = findall(x -> x == 0, neighbor)
+        idx1 = rand(opened, 1)
+        idx2 =  rand(closed, 1)
         neighbor[idx1], neighbor[idx2] = neighbor[idx2], neighbor[idx1]
     end
 
@@ -39,8 +39,8 @@ end
 # Kostenfunktion (Mulitplikation von Opening Matrix and Cost Matrix)
 function generate_objective_value(assignment::Matrix{Int64}, plants)
     summe = 0
-    for i in 1:100
-        for j in 1:10
+    for i in 1:n
+        for j in 1:m
             summe += assignment[i,j]*c[i,j]
         end
     end
@@ -167,8 +167,8 @@ end
 ######################## Main Script #####################################################
 
 # Initialisieren der Parameter
-n = 100  # Anzahl der Kunden
-m = 10   # Anzahl der Einrichtungen
+n = 5  # Anzahl der Kunden
+m = 5   # Anzahl der Einrichtungen
 
 # Generieren der Kostenmatrix c
 c = rand(1:100, n, m)  # Transportkosten, zufällige positive Integer zwischen 1 und 100
@@ -183,7 +183,7 @@ for i in 1:n
 end
 
 #maximale Anzahl geöffneter Factories und Iterations
-max_fac = 4
-max_iterations = 10
+max_fac = 1
+max_iterations = 40
 
 print(variable_neighborhood_search())
