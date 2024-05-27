@@ -5,41 +5,25 @@ using Random
 
 
 # Build Solution
-function build_solution(n::Int64, m::Int64, c::Matrix{Int64}, max_fac::Int64)
+function build_solution(max_fac::Int64)
     #choose randomly which factories are opened
-    objective_value = randperm(10)[1:max_fac]
-    solution = zeros(Int,n,m)
+    plants = [ones(Int, max_fac); zeros(Int, m - max_fac)]
+    shuffle!(plants)
     
-    #always assign customer to cheapest opened facility
-    for i in 1:n
-        index = argmin(c[i, objective_value])
-        index = objective_value[index]
-        solution[i,index] =1
-    end
-    return solution, objective_value
+    #always assign customer to most prefered opened facility
+    assignment = assignCustomers(plants)
+
+    return assignment, plants
 end
 
-x2, y2 = build_solution(n, m, c, max_fac)
+x2, y2 = build_solution(max_fac)
 x2
 y2
 
-# Kostenfunktion (Mulitplikation von Opening Matrix and Cost Matrix)
-function generate_objective_value(solution::Matrix{Int64})
-    sum = 0
-    for i in 1:100
-        for j in 1:10
-            sum += solution[i,j]*c[i,j]
-        end
-    end
-    return sum #objective value
-end
-
-generate_objective_value(x2)
-
 # Funktion zur Generierung einer Nachbarlösung durch Verschieben eines Ortes in der Tour
-function generate_neighbor(solution, k)
-    neighbor = copy(solution)
-    n = length(solution)
+function generate_neighbor(plants, k)
+    neighbor = copy(plants)
+    n = length(plants)
     
     # Sicherstellen, dass k nicht größer als die Anzahl der Elemente ist
     k = min(k, div(n, 2))
@@ -48,31 +32,65 @@ function generate_neighbor(solution, k)
         idx1, idx2 = rand(1:n, 2)
         neighbor[idx1], neighbor[idx2] = neighbor[idx2], neighbor[idx1]
     end
-    
+
     return neighbor
 end
 
 generate_neighbor(x2, 2)
 
+# Kostenfunktion (Mulitplikation von Opening Matrix and Cost Matrix)
+function generate_objective_value(assignment::Matrix{Int64})
+    sum = 0
+    for i in 1:100
+        for j in 1:10
+            sum += assignment[i,j]*c[i,j]
+        end
+    end
+    return sum #objective value
+end
+
+
+function assignCustomers(plants)
+    # 10 ist das beste 1 das schlechteste
+    pref_new = zeros(Int, n,m)
+    for i in 1:n
+        for j in 1:m 
+            pref_new[i,j] = w[i,j] * plants[j]
+        end
+    end
+
+    assignment = zeros(Int, n, m)
+    for i in 1:n
+        best_pref = argmax(pref_new[i,:])
+        assignment[i, best_pref] = 1
+    end
+    
+    return assignment
+
+end
+
+
 # Einfache Nachbarschaftssuche mit gegebener Initiallösung
-function local_search(neighbor, max_iterations) # k aus neighborhood einfügen
-    current_solution = neighbor
-    current_cost = generate_objective_value(current_solution)
+function local_search(assignment, plants, max_iterations) # k aus neighborhood einfügen
+    current_plant = plants
+    current_cost = generate_objective_value(assignment)
     
     for i in 1:max_iterations
-        neighbor_solution = generate_neighbor(current_solution, 1) #k einfügen
-        neighbor_cost = generate_objective_value(neighbor_solution)
+        neighbor_plants = generate_neighbor(current_plant, 1) #k einfügen
+        neibhbor_assignment = assignCustomers(neighbor_plants)
+        neighbor_cost = generate_objective_value(neibhbor_assignment)
         
         if neighbor_cost < current_cost
-            current_solution = neighbor_solution
+            current_plant = neighbor_plants
+            current_assignment = neibhbor_assignment
             current_cost = neighbor_cost
         end
     end
     
-    return current_solution, current_cost
+    return current_plant, current_assignment, current_cost
 end
 
-local_search(x2, 1000)
+local_search(x2, y2, 1000)
 
 a = generate_objective_value(x2)
 
@@ -120,13 +138,13 @@ end
 
 
 function variable_neighborhood_search(z)
-    x, y = build_solution2(n, m, c, max_fac)
+    assignment, plant = build_solution2(n, m, c, max_fac)
     x_star = copy(x)  # Julia's `copy` function is used to create a deep copy of the array
     k = 1
 
     while count < max_iterations
-        x_prime = neighborhood_function(x, k)
-        x_double_prime = local_search(x_prime)
+        plant_prime = neighborhood_function(plant, k)
+        assignment_prime, obejctive_value = local_search(assignment, plant_prime, 16)
 
         if acceptance_decision(x, x_double_prime)
             x = copy(x_double_prime)  # Ensure a deep copy
