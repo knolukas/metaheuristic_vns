@@ -68,7 +68,10 @@ function assignCustomers(plants)
     pref_new = zeros(Int, n,m)
     for i in 1:n
         for j in 1:m 
-            pref_new[i,j] = w[i,j] * plants[j]
+            pref_new[i,j] = w[i,j] * -1 * plants[j]
+            if plants[j] == 0
+                pref_new[i,j] = -100000000000000
+            end
         end
     end
 
