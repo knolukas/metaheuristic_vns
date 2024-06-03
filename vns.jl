@@ -1,9 +1,8 @@
 # Hardcode für die gegebenen Daten
 using Random
+using DelimitedFiles
 
 ##################### start with functions ################################################
-
-include("import_script.jl")
 
 # Build Solution
 function build_solution()
@@ -219,28 +218,66 @@ function variable_neighborhood_search_2(max_iterations::Int64)
 end
 
 
-######################## Main Script #####################################################
+#######################################################################################################
+# Import function for instances
+#######################################################################################################
 
-# Initialisieren der Parameter
-n = 20  # Anzahl der Kunden
-m = 10   # Anzahl der Einrichtungen
+function read_instance_data(file_path)
 
-# Generieren der Kostenmatrix c
-c = rand(1:100, n, m)  # Transportkosten, zufällige positive Integer zwischen 1 und 100
+    # Lesen des gesamten Inhalts des Files
+    file_content = readdlm(file_path, ' ')
 
-# Generieren des Vektors für die Öffnungskosten der Einrichtungen
-opening_costs = rand(100:500, m)  # Öffnungskosten, zufällige positive Integer zwischen 100 und 500
+    # Extrahieren der Anzahl von Kunden und Facilities aus der ersten Zeile
+    num_facilities = file_content[1, 1]
+    num_customers = file_content[1, 2]
 
-# Generieren der Präferenzmatrix w
-w = zeros(Int, n, m)
-for i in 1:n
-    w[i, :] = shuffle(1:m)  # Zufällige Anordnung der Präferenzen 1 bis 10 für jeden Kunden
+    # Initialisieren der Arrays
+    preference_array = Array{Int64}(undef, num_customers, num_facilities)
+    opening_costs = Array{Float64}(undef, num_facilities)
+    transportation_costs = Array{Float64}(undef, num_customers, num_facilities)
+
+    # Füllen des preference_array
+    for i in 1:num_customers
+        for j in 1:num_facilities
+            preference_array[i, j] = file_content[i + 1, j]
+        end
+    end
+
+    # Füllen des opening_costs
+    offset = 1 + num_customers
+    for i in 1:num_facilities
+        opening_costs[i] = file_content[offset + i, 1]
+    end
+
+    # Füllen des transportation_costs
+    offset += num_facilities
+    for i in 1:num_customers
+        for j in 1:num_facilities
+            transportation_costs[i, j] = file_content[offset + i, j]
+        end
+    end
+
+    return num_customers, num_facilities, preference_array, opening_costs,  transportation_costs
 end
 
-#maximale Anzahl geöffneter Factories und Iterations
-max_fac = 3
-max_iterations = 10
 
-print(variable_neighborhood_search(max_iterations))
-println("Adapted solution")
-println(variable_neighborhood_search_2(max_iterations))
+######################## Main Script #####################################################
+
+#get all instances names 
+directory = "data/"
+filenames = readdir(directory)
+
+objective_values_all_instances = []
+
+ @time for instance in filenames
+    println(instance)
+    n, m, w, opening_costs, c = read_instance_data(string(directory,instance))
+    
+    assignment, plants, objective_value = variable_neighborhood_search_2(100)
+    push!(objective_values_all_instances, objective_value)
+
+end
+
+objective_values_all_instances
+
+
