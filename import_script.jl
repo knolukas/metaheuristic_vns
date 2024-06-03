@@ -52,6 +52,6 @@ module ImportScript
         println("Transportation Costs:")
         println(transportation_costs)
 
-        return preference_array, opening_costs,  transportation_costs
+        return preference_array, opening_costs, transportation_costs
     end
 end # module
