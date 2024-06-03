@@ -3,6 +3,7 @@ using Random
 
 ##################### start with functions ################################################
 
+include("import_script.jl")
 
 # Build Solution
 function build_solution()
