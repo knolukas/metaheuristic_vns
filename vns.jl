@@ -87,7 +87,7 @@ end
 
 
 # Einfache Nachbarschaftssuche mit gegebener Initiallösung
-function local_search(assignment, plants) # k aus neighborhood einfügen
+function local_search(assignment, plants, max_iterations) # k aus neighborhood einfügen
     current_plant = plants
     current_assignment = assignment
     current_cost = generate_objective_value(assignment, plants)
@@ -150,7 +150,7 @@ end
 #################################################################################################
 
 
-function variable_neighborhood_search()
+function variable_neighborhood_search(max_iterations)
     assignment, plant = build_solution()
     best_assignment = copy(assignment)  # Julia's `copy` function is used to create a deep copy of the array
     best_plant = copy(plant)
@@ -160,7 +160,7 @@ function variable_neighborhood_search()
 
     while count < max_iterations
         plant_neighbor = generate_neighbor(plant, k)
-        assignment_prime, plant_prime, objective_value = local_search(assignment, plant_neighbor)
+        assignment_prime, plant_prime, objective_value = local_search(assignment, plant_neighbor, max_iterations)
 
         if acceptance_decision(best_assignment, best_plant, assignment_prime, plant_prime)
             
@@ -184,7 +184,7 @@ end
 # Variable neighborhood adapated function
 #################################################################################################
 #################################################################################################
-function variable_neighborhood_search_2()
+function variable_neighborhood_search_2(max_iterations::Int64)
     assignment, plant = build_solution_2(1)
     best_assignment = copy(assignment)  # Julia's `copy` function is used to create a deep copy of the array
     best_plant = copy(plant)
@@ -196,7 +196,7 @@ function variable_neighborhood_search_2()
         assignment, plant = build_solution_2(num_facilities)
         while count < max_iterations
             plant_neighbor = generate_neighbor(plant, k)
-            assignment_prime, plant_prime, objective_value = local_search(assignment, plant_neighbor)
+            assignment_prime, plant_prime, objective_value = local_search(assignment, plant_neighbor, max_iterations)
     
             if acceptance_decision(best_assignment, best_plant, assignment_prime, plant_prime)
                 
@@ -240,6 +240,6 @@ end
 max_fac = 3
 max_iterations = 10
 
-print(variable_neighborhood_search())
+print(variable_neighborhood_search(max_iterations))
 println("Adapted solution")
-println(variable_neighborhood_search_2())
+println(variable_neighborhood_search_2(max_iterations))
