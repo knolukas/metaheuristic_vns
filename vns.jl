@@ -283,6 +283,31 @@ c = Array
 
 end
 
-objective_values_all_instances
+#for initial solution with fixed opened facilities
+objective_values_all_instances = []
+max_fac = 4
 
+@time for instance in filenames
+    println(instance)
+    n, m, w, opening_costs, c = read_instance_data(string(directory,instance))
+    
+    assignment, plants, objective_value = variable_neighborhood_search(10)
+    push!(objective_values_all_instances, objective_value)
+
+end
+
+objective_values_all_instances
+#only used to export the results to a csv file
+using Pkg
+Pkg.add("DataFrames")
+Pkg.add("CSV")
+using DataFrames
+using CSV
+
+#exporting filenames
+CSV.write("filennames.csv", Tables.table(filenames),delim=';',decimal=',')
+#for 4 fixed opened facilities:
+
+
+CSV.write("varOpenFac_10.csv", Tables.table(objective_values_all_instances),delim=';',decimal=',')
 
