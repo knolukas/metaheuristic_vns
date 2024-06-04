@@ -18,7 +18,7 @@ end
 
 
 # Build Solution
-function build_solution_2(num_fac::Int64, m::Int64)
+function build_solution_2(num_fac::Int64)
     #choose randomly which factories are opened
     plants = [ones(Int, num_fac); zeros(Int, m - num_fac)]
     shuffle!(plants)
@@ -184,8 +184,8 @@ end
 # Variable neighborhood adapated function
 #################################################################################################
 #################################################################################################
-function variable_neighborhood_search_2(max_iterations::Int64, m::Int64)
-    assignment, plant = build_solution_2(1, m)
+function variable_neighborhood_search_2(max_iterations::Int64)
+    assignment, plant = build_solution_2(1)
     best_assignment = copy(assignment)  # Julia's `copy` function is used to create a deep copy of the array
     best_plant = copy(plant)
     best_objective_value = Inf
@@ -278,7 +278,7 @@ c = Array
     println(instance)
     n, m, w, opening_costs, c = read_instance_data(string(directory,instance))
     
-    assignment, plants, objective_value = variable_neighborhood_search_2(10, m)
+    assignment, plants, objective_value = variable_neighborhood_search_2(10)
     push!(objective_values_all_instances, objective_value)
 
 end
