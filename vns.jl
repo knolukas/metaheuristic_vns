@@ -18,7 +18,7 @@ end
 
 
 # Build Solution
-function build_solution_2(num_fac)
+function build_solution_2(num_fac::Int64, m::Int64)
     #choose randomly which factories are opened
     plants = [ones(Int, num_fac); zeros(Int, m - num_fac)]
     shuffle!(plants)
@@ -184,8 +184,8 @@ end
 # Variable neighborhood adapated function
 #################################################################################################
 #################################################################################################
-function variable_neighborhood_search_2(max_iterations::Int64)
-    assignment, plant = build_solution_2(1)
+function variable_neighborhood_search_2(max_iterations::Int64, m::Int64)
+    assignment, plant = build_solution_2(1, m)
     best_assignment = copy(assignment)  # Julia's `copy` function is used to create a deep copy of the array
     best_plant = copy(plant)
     best_objective_value = Inf
@@ -193,7 +193,7 @@ function variable_neighborhood_search_2(max_iterations::Int64)
     k = 1
     
     for num_facilities in 1:m
-        assignment, plant = build_solution_2(num_facilities)
+        assignment, plant = build_solution_2(num_facilities,m)
         while count < max_iterations
             plant_neighbor = generate_neighbor(plant, k)
             assignment_prime, plant_prime, objective_value = local_search(assignment, plant_neighbor, max_iterations)
@@ -267,13 +267,18 @@ end
 directory = "data/"
 filenames = readdir(directory)
 
+#initialize values so that the are globally visible
 objective_values_all_instances = []
-
+n= 0
+m= 0
+w=Array
+opening_costs=Array
+c = Array
  @time for instance in filenames
     println(instance)
     n, m, w, opening_costs, c = read_instance_data(string(directory,instance))
     
-    assignment, plants, objective_value = variable_neighborhood_search_2(100)
+    assignment, plants, objective_value = variable_neighborhood_search_2(10, m)
     push!(objective_values_all_instances, objective_value)
 
 end
