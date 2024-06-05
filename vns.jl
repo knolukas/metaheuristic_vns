@@ -193,7 +193,7 @@ function variable_neighborhood_search_2(max_iterations::Int64)
     k = 1
     
     for num_facilities in 1:m
-        assignment, plant = build_solution_2(num_facilities,m)
+        assignment, plant = build_solution_2(num_facilities)
         while count < max_iterations
             plant_neighbor = generate_neighbor(plant, k)
             assignment_prime, plant_prime, objective_value = local_search(assignment, plant_neighbor, max_iterations)
@@ -275,10 +275,11 @@ w=Array
 opening_costs=Array
 c = Array
  @time for instance in filenames
+    Random.seed!(123)
     println(instance)
     n, m, w, opening_costs, c = read_instance_data(string(directory,instance))
     
-    assignment, plants, objective_value = variable_neighborhood_search_2(10)
+    assignment, plants, objective_value = variable_neighborhood_search_2(100)
     push!(objective_values_all_instances, objective_value)
 
 end
@@ -288,10 +289,11 @@ objective_values_all_instances = []
 max_fac = 4
 
 @time for instance in filenames
+    Random.seed!(123)
     println(instance)
     n, m, w, opening_costs, c = read_instance_data(string(directory,instance))
     
-    assignment, plants, objective_value = variable_neighborhood_search(10)
+    assignment, plants, objective_value = variable_neighborhood_search(100)
     push!(objective_values_all_instances, objective_value)
 
 end
@@ -309,5 +311,5 @@ CSV.write("filennames.csv", Tables.table(filenames),delim=';',decimal=',')
 #for 4 fixed opened facilities:
 
 
-CSV.write("varOpenFac_10.csv", Tables.table(objective_values_all_instances),delim=';',decimal=',')
+CSV.write("varOpenFac_100.csv", Tables.table(objective_values_all_instances),delim=';',decimal=',')
 
