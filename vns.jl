@@ -191,13 +191,17 @@ function variable_neighborhood_search_2(max_iterations::Int64)
     best_objective_value = Inf
     count = 0
     k = 1
-    
+    #local_search_runtimes = []
+
     for num_facilities in 1:m
         assignment, plant = build_solution_2(num_facilities)
         while count < max_iterations
             plant_neighbor = generate_neighbor(plant, k)
+            # Measure the runtime of the local_search function
+            #local_search_time = @elapsed begin
             assignment_prime, plant_prime, objective_value = local_search(assignment, plant_neighbor, max_iterations)
-    
+            #end
+            #push!(local_search_runtimes, local_search_time)
             if acceptance_decision(best_assignment, best_plant, assignment_prime, plant_prime)
                 
                 best_assignment = copy(assignment_prime)  
@@ -214,7 +218,7 @@ function variable_neighborhood_search_2(max_iterations::Int64)
         end
     end
     
-    return best_assignment, best_plant, best_objective_value
+    return best_assignment, best_plant, best_objective_value#, local_search_runtimes
 end
 
 
@@ -313,3 +317,10 @@ CSV.write("filennames.csv", Tables.table(filenames),delim=';',decimal=',')
 
 CSV.write("varOpenFac_100.csv", Tables.table(objective_values_all_instances),delim=';',decimal=',')
 
+#check for runtime of local Search
+instance = "a100_75_1.txt"
+Random.seed!(123)
+println(instance)
+n, m, w, opening_costs, c = read_instance_data(string(directory,instance))
+@time assignment, plants, objective_value, runtime = variable_neighborhood_search_2(100)
+sum(runtime)
