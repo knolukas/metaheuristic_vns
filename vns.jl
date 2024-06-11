@@ -87,13 +87,13 @@ end
 
 
 # Einfache Nachbarschaftssuche mit gegebener Initiallösung
-function local_search(assignment, plants, max_iterations) # k aus neighborhood einfügen
+function local_search(assignment, plants, max_iterations, k::Int64) # k aus neighborhood einfügen
     current_plant = plants
     current_assignment = assignment
     current_cost = generate_objective_value(assignment, plants)
     
     for i in 1:max_iterations
-        neighbor_plants = generate_neighbor(current_plant, 1) #k einfügen
+        neighbor_plants = generate_neighbor(current_plant, k) #k einfügen
         neighbor_assignment = assignCustomers(neighbor_plants)
         neighbor_cost = generate_objective_value(neighbor_assignment, neighbor_plants)
         
@@ -160,7 +160,7 @@ function variable_neighborhood_search(max_iterations)
 
     while count < max_iterations
         plant_neighbor = generate_neighbor(plant, k)
-        assignment_prime, plant_prime, objective_value = local_search(assignment, plant_neighbor, max_iterations)
+        assignment_prime, plant_prime, objective_value = local_search(assignment, plant_neighbor, max_iterations, k)
 
         if acceptance_decision(best_assignment, best_plant, assignment_prime, plant_prime)
             
@@ -179,6 +179,8 @@ function variable_neighborhood_search(max_iterations)
     return best_assignment, best_plant, best_objective_value
 end
 
+#k genau in der anderen Reihenfolge einfügen
+
 #################################################################################################
 #################################################################################################
 # Variable neighborhood adapated function
@@ -196,10 +198,10 @@ function variable_neighborhood_search_2(max_iterations::Int64)
     for num_facilities in 1:m
         assignment, plant = build_solution_2(num_facilities)
         while count < max_iterations
-            plant_neighbor = generate_neighbor(plant, k)
+            plant_neighbor = generate_neighbor(plant, 1) # changed k to 1 as explained by Sinnl
             # Measure the runtime of the local_search function
             #local_search_time = @elapsed begin
-            assignment_prime, plant_prime, objective_value = local_search(assignment, plant_neighbor, max_iterations)
+            assignment_prime, plant_prime, objective_value = local_search(assignment, plant_neighbor, max_iterations, k)
             #end
             #push!(local_search_runtimes, local_search_time)
             if acceptance_decision(best_assignment, best_plant, assignment_prime, plant_prime)
@@ -283,7 +285,7 @@ c = Array
     println(instance)
     n, m, w, opening_costs, c = read_instance_data(string(directory,instance))
     
-    assignment, plants, objective_value = variable_neighborhood_search_2(100)
+    assignment, plants, objective_value = variable_neighborhood_search_2(10)
     push!(objective_values_all_instances, objective_value)
 
 end
