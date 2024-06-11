@@ -160,8 +160,13 @@ function variable_neighborhood_search(max_iterations)
 
     while count < max_iterations
         plant_neighbor = generate_neighbor(plant, k)
+<<<<<<< HEAD
         assignment_prime, plant_prime, objective_value = local_search(assignment, plant_neighbor, max_iterations, k)
 
+=======
+        assignment_prime, plant_prime, objective_value = local_search(assignment, plant_neighbor, max_iterations)
+        println(objective_value)
+>>>>>>> 20069cc8e3e59fb64499516d77e6caad5647cffe
         if acceptance_decision(best_assignment, best_plant, assignment_prime, plant_prime)
             
             best_assignment = copy(assignment_prime)  
@@ -176,6 +181,7 @@ function variable_neighborhood_search(max_iterations)
         end
         count = count + 1
     end
+    println(best_objective_value)
     return best_assignment, best_plant, best_objective_value
 end
 
@@ -201,7 +207,12 @@ function variable_neighborhood_search_2(max_iterations::Int64)
             plant_neighbor = generate_neighbor(plant, 1) # changed k to 1 as explained by Sinnl
             # Measure the runtime of the local_search function
             #local_search_time = @elapsed begin
+<<<<<<< HEAD
             assignment_prime, plant_prime, objective_value = local_search(assignment, plant_neighbor, max_iterations, k)
+=======
+            assignment_prime, plant_prime, objective_value = local_search(assignment, plant_neighbor, max_iterations)
+            println(objective_value)
+>>>>>>> 20069cc8e3e59fb64499516d77e6caad5647cffe
             #end
             #push!(local_search_runtimes, local_search_time)
             if acceptance_decision(best_assignment, best_plant, assignment_prime, plant_prime)
@@ -285,7 +296,11 @@ c = Array
     println(instance)
     n, m, w, opening_costs, c = read_instance_data(string(directory,instance))
     
+<<<<<<< HEAD
     assignment, plants, objective_value = variable_neighborhood_search_2(10)
+=======
+    assignment, plants, objective_value = variable_neighborhood_search(20)
+>>>>>>> 20069cc8e3e59fb64499516d77e6caad5647cffe
     push!(objective_values_all_instances, objective_value)
 
 end
@@ -299,7 +314,7 @@ max_fac = 4
     println(instance)
     n, m, w, opening_costs, c = read_instance_data(string(directory,instance))
     
-    assignment, plants, objective_value = variable_neighborhood_search(100)
+    assignment, plants, objective_value = variable_neighborhood_search_2(20)
     push!(objective_values_all_instances, objective_value)
 
 end
