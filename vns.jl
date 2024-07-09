@@ -193,12 +193,12 @@ function variable_neighborhood_search_2(max_iterations::Int64)
     best_assignment = copy(assignment)  # Julia's `copy` function is used to create a deep copy of the array
     best_plant = copy(plant)
     best_objective_value = Inf
-    count = 0
     k = 1
     #local_search_runtimes = []
 
-    for num_facilities in 1:m
+    for num_facilities in 1:floor(Int,(m)/4)
         assignment, plant = build_solution_2(num_facilities)
+        count = 0
         while count < max_iterations
             plant_neighbor = generate_neighbor(plant, 1) # changed k to 1 as explained by Sinnl
             # Measure the runtime of the local_search function
