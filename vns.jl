@@ -177,7 +177,7 @@ function variable_neighborhood_search(max_iterations)
         end
         count = count + 1
     end
-    println(best_objective_value)
+    #println(best_objective_value)
     return best_assignment, best_plant, best_objective_value
 end
 
@@ -205,7 +205,7 @@ function variable_neighborhood_search_2(max_iterations::Int64)
             #local_search_time = @elapsed begin
 
             assignment_prime, plant_prime, objective_value = local_search(assignment, plant_neighbor, max_iterations, k)
-            println(objective_value)
+            #println(objective_value)
 
             #end
             #push!(local_search_runtimes, local_search_time)
